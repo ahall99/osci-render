@@ -14,6 +14,7 @@
 #include "audio/DistortEffect.h"
 #include "audio/SmoothEffect.h"
 #include "audio/VectorCancellingEffect.h"
+#include "audio/GodrayEffect.h"
 #include "parser/FileParser.h"
 #include "parser/FrameProducer.h"
 
@@ -126,6 +127,12 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
         dashedLineEffect,
         std::vector<osci::EffectParameter*>{
             new osci::EffectParameter("Dash Length", "Controls the length of the dashed line.", "dashLength", VERSION_HINT, 0.2, 0.0, 1.0),
+        }));
+    toggleableEffects.push_back(std::make_shared<osci::Effect>(
+        std::make_shared<GodrayEffect>(),
+        std::vector<osci::EffectParameter *>{
+            new osci::EffectParameter("God Ray Size", "TODO", "godrayAmp", VERSION_HINT, 0.2, 0.0, 1.0),
+            new osci::EffectParameter("God Ray Bias", "TODO", "godrayBias", VERSION_HINT, 1.0, 0.0, 1.5)
         }));
     toggleableEffects.push_back(custom);
     toggleableEffects.push_back(trace);
