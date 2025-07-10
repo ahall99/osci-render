@@ -10,7 +10,9 @@
 
 #include "PluginEditor.h"
 #include "audio/BitCrushEffect.h"
+#include "audio/SpiralBitCrushEffect.h"
 #include "audio/BulgeEffect.h"
+#include "audio/TwistEffect.h"
 #include "audio/DistortEffect.h"
 #include "audio/SmoothEffect.h"
 #include "audio/VectorCancellingEffect.h"
@@ -29,6 +31,20 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<BitCrushEffect>(),
         new osci::EffectParameter("Bit Crush", "Limits the resolution of points drawn to the screen, making the object look pixelated, and making the audio sound more 'digital' and distorted.", "bitCrush", VERSION_HINT, 0.6, 0.0, 1.0)));
+    auto spiralBitCrushEffect = std::make_shared<osci::Effect>(
+        std::make_shared<SpiralBitCrushEffect>(),
+        std::vector<osci::EffectParameter *>{
+            new osci::EffectParameter("Spiral Bit Crush", "TODO", "spiralBitCrush", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("Spiral Density", "TODO", "spiralDensity", VERSION_HINT, 13.0, 3.0, 30.0),
+            new osci::EffectParameter("Spiral Twist", "TODO", "spiralTwist", VERSION_HINT, 8.0, 0.0, 30.0),
+            new osci::EffectParameter("Angle Offset", "TODO", "spiralOffsetX", VERSION_HINT, 0.0, -1.0, 1.0),
+            new osci::EffectParameter("Radial Offset", "TODO", "spiralOffsetY", VERSION_HINT, 0.0, -1.0, 0.0)
+    });
+    spiralBitCrushEffect->getParameter("spiralOffsetX")->lfo->setUnnormalisedValueNotifyingHost((int)osci::LfoType::Sawtooth);
+    spiralBitCrushEffect->getParameter("spiralOffsetX")->lfoRate->setUnnormalisedValueNotifyingHost(0.2);
+    spiralBitCrushEffect->getParameter("spiralOffsetY")->lfo->setUnnormalisedValueNotifyingHost((int)osci::LfoType::Sawtooth);
+    spiralBitCrushEffect->getParameter("spiralOffsetY")->lfoRate->setUnnormalisedValueNotifyingHost(1.0);
+    toggleableEffects.push_back(spiralBitCrushEffect);
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<BulgeEffect>(),
         new osci::EffectParameter("Bulge", "Applies a bulge that makes the centre of the image larger, and squishes the edges of the image. This applies a distortion to the audio.", "bulge", VERSION_HINT, 0.5, 0.0, 1.0)));
@@ -108,6 +124,11 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
             new osci::EffectParameter("Swirl", "Swirls the image in a spiral pattern.", "swirl", VERSION_HINT, 0.3, -1.0, 1.0),
         }));
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
+        std::make_shared<TwistEffect>(),
+        std::vector<osci::EffectParameter *>{
+        new osci::EffectParameter("Twist", "Twists the image in a corkscrew pattern.", "swirl", VERSION_HINT, 1.0, 0.0, 2.0),
+    }));
+    toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<SmoothEffect>(),
         new osci::EffectParameter("Smoothing", "This works as a low-pass frequency filter that removes high frequencies, making the image look smoother, and audio sound less harsh.", "smoothing", VERSION_HINT, 0.75, 0.0, 1.0)));
     std::shared_ptr<osci::Effect> wobble = std::make_shared<osci::Effect>(
@@ -130,7 +151,7 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
         }));
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<GodrayEffect>(),
-        std::vector<osci::EffectParameter *>{
+        std::vector<osci::EffectParameter*>{
             new osci::EffectParameter("God Ray Size", "TODO", "godrayAmp", VERSION_HINT, 0.2, 0.0, 1.0),
             new osci::EffectParameter("God Ray Bias", "TODO", "godrayBias", VERSION_HINT, 1.0, 0.0, 1.5)
         }));
