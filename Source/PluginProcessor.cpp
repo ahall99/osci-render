@@ -17,6 +17,7 @@
 #include "audio/SmoothEffect.h"
 #include "audio/VectorCancellingEffect.h"
 #include "audio/GodrayEffect.h"
+#include "audio/RadialWrapEffect.h"
 #include "parser/FileParser.h"
 #include "parser/FrameProducer.h"
 
@@ -30,15 +31,18 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
 
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<BitCrushEffect>(),
-        new osci::EffectParameter("Bit Crush", "Limits the resolution of points drawn to the screen, making the object look pixelated, and making the audio sound more 'digital' and distorted.", "bitCrush", VERSION_HINT, 0.6, 0.0, 1.0)));
+        std::vector<osci::EffectParameter*>{
+            new osci::EffectParameter("Bit Crush", "Limits the resolution of points drawn to the screen, making the object look pixelated, and making the audio sound more 'digital' and distorted.", "bitCrushEnable", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("Bit Crush Resolution", "Constrains the resolution that points are limited to.", "bitCrush", VERSION_HINT, 0.6, 0.0, 1.0)
+    }));
     auto spiralBitCrushEffect = std::make_shared<osci::Effect>(
         std::make_shared<SpiralBitCrushEffect>(),
-        std::vector<osci::EffectParameter *>{
-            new osci::EffectParameter("Spiral Bit Crush", "TODO", "spiralBitCrush", VERSION_HINT, 1.0, 0.0, 1.0),
-            new osci::EffectParameter("Spiral Density", "TODO", "spiralDensity", VERSION_HINT, 13.0, 3.0, 30.0),
-            new osci::EffectParameter("Spiral Twist", "TODO", "spiralTwist", VERSION_HINT, 8.0, 0.0, 30.0),
-            new osci::EffectParameter("Angle Offset", "TODO", "spiralOffsetX", VERSION_HINT, 0.0, -1.0, 1.0),
-            new osci::EffectParameter("Radial Offset", "TODO", "spiralOffsetY", VERSION_HINT, 0.0, -1.0, 0.0)
+        std::vector<osci::EffectParameter*>{
+            new osci::EffectParameter("Spiral Bit Crush", "Constrains points to a spiral pattern.", "spiralBitCrushEnable", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("Spiral Density", "Controls the density of the spiral pattern points are constrained to.", "spiralDensity", VERSION_HINT, 13.0, 3.0, 30.0),
+            new osci::EffectParameter("Spiral Twist", "Controls how much the spiral pattern twists.", "spiralTwist", VERSION_HINT, 8.0, 0.0, 30.0),
+            new osci::EffectParameter("Angle Offset", "Rotates the spiral pattern.", "spiralOffsetX", VERSION_HINT, 0.0, -1.0, 1.0),
+            new osci::EffectParameter("Radial Offset", "Zooms the spiral pattern.", "spiralOffsetY", VERSION_HINT, 0.0, -1.0, 0.0)
     });
     spiralBitCrushEffect->getParameter("spiralOffsetX")->lfo->setUnnormalisedValueNotifyingHost((int)osci::LfoType::Sawtooth);
     spiralBitCrushEffect->getParameter("spiralOffsetX")->lfoRate->setUnnormalisedValueNotifyingHost(0.2);
@@ -147,14 +151,21 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         dashedLineEffect,
         std::vector<osci::EffectParameter*>{
-            new osci::EffectParameter("Dash Length", "Controls the length of the dashed line.", "dashLength", VERSION_HINT, 0.2, 0.0, 1.0),
+            new osci::EffectParameter("Dash Length", "Controls the length between dashed lines.", "dashLength", VERSION_HINT, 0.2, 0.0, 1.0),
+            new osci::EffectParameter("Dash Coverage", "Controls the fraction of each dash unit that is drawn.", "dashCoverage", VERSION_HINT, 0.5, 0.0, 1.0),
         }));
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<GodrayEffect>(),
         std::vector<osci::EffectParameter*>{
             new osci::EffectParameter("God Ray Size", "TODO", "godrayAmp", VERSION_HINT, 0.2, 0.0, 1.0),
-            new osci::EffectParameter("God Ray Bias", "TODO", "godrayBias", VERSION_HINT, 1.0, 0.0, 1.5)
+            new osci::EffectParameter("God Ray Bias", "TODO", "godrayBias", VERSION_HINT, 1.0, -1.5, 1.5)
         }));
+    toggleableEffects.push_back(std::make_shared<osci::Effect>(
+        std::make_shared<RadialWrapEffect>(),
+        std::vector<osci::EffectParameter *>{
+        new osci::EffectParameter("Radial Wrap", "TODO", "radialWrapEnable", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("Wrap Degree", "TODO", "radialWrapDegree", VERSION_HINT, 2.0, 1.0, 8.0)
+    }));
     toggleableEffects.push_back(custom);
     toggleableEffects.push_back(trace);
     trace->getParameter("traceLength")->lfo->setUnnormalisedValueNotifyingHost((int)osci::LfoType::Sawtooth);

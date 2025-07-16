@@ -3,32 +3,31 @@
 
 class DashedLineEffect : public osci::EffectApplication {
 public:
-	osci::Point apply(int index, osci::Point vector, const std::vector<std::atomic<double>>& values, double sampleRate) override {
+	osci::Point apply(int index, osci::Point input, const std::vector<std::atomic<double>>& values, double sampleRate) override {
 		// dash length in seconds
-		double dashLength = values[0] / 400;
+		double dashLength = values[0] / 200;
+		double dashCoverage = juce::jlimit(0.0, 1.0, values[1].load());
 		int dashLengthSamples = (int)(dashLength * sampleRate);
-		dashLengthSamples = juce::jmin(dashLengthSamples, MAX_BUFFER);
-		
-		if (dashIndex >= dashLengthSamples) {
-			dashIndex = 0;
+		dashLengthSamples = juce::jlimit(2, MAX_BUFFER, dashLengthSamples);
+		buffer[bufferIndex] = input;
+
+		// Linear interpolation between closest vectors
+		double samplePos = dashCoverage * bufferIndex;
+		int lowIndex = (int)std::floor(samplePos);
+		int highIndex = std::min(lowIndex + 1, dashLengthSamples - 1);
+		double mixFactor = samplePos - floor(samplePos); // Fractional part
+		osci::Point output = (1 - mixFactor) * buffer[lowIndex] + mixFactor * buffer[highIndex];
+
+		bufferIndex++;
+		if (bufferIndex >= dashLengthSamples) {
 			bufferIndex = 0;
 		}
-
-		buffer[bufferIndex] = vector;
-		bufferIndex++;
-		
-		vector = buffer[dashIndex];
-		
-		if (index % 2 == 0) {
-			dashIndex++;
-		}
-		
-		return vector;
+		return output;
 	}
 
 private:
 	const static int MAX_BUFFER = 192000;
 	std::vector<osci::Point> buffer = std::vector<osci::Point>(MAX_BUFFER);
-	int dashIndex = 0;
+	//int dashIndex = 0;
 	int bufferIndex = 0;
 };
