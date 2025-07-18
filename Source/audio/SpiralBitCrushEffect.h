@@ -5,11 +5,11 @@
 class SpiralBitCrushEffect : public osci::EffectApplication {
 public:
 	osci::Point apply(int index, osci::Point input, const std::vector<std::atomic<double>> &values, double sampleRate) override {
+		// Completing one revolution in input space traverses the hypotenuse of one "domain" in log-polar space
 		double effectScale = juce::jlimit(0.0, 1.0, values[0].load());
-		double domainX = juce::jmax(2.0, std::round(values[1].load()));
+		double domainX = juce::jmax(2.0, std::round(values[1].load())); // TODO try r, theta user controls for domain
 		double domainY = std::round(values[2].load());
-		double offsetX = values[3].load();
-		double offsetY = -values[4].load(); // Negate so positive offset zooms in instead of out
+		osci::Point offset(values[3].load(), -values[4].load());
 
 		osci::Point output(0, 0, input.z);
 		if (input.x != 0 || input.y != 0) {
@@ -21,24 +21,19 @@ public:
 			double r = std::hypot(input.x, input.y);
 			double logR = std::log(r);
 			double theta = std::atan2(input.y, input.x);
-			double logPolarX = theta * std::cos(domainTheta) - logR * std::sin(domainTheta);
-			double logPolarY = theta * std::sin(domainTheta) + logR * std::cos(domainTheta);
-			logPolarX = scale * logPolarX + offsetX;
-			logPolarY = scale * logPolarY + offsetY;
+			osci::Point logPolarCoords(theta, logR);
+			logPolarCoords.rotate(0, 0, domainTheta);
+			logPolarCoords = logPolarCoords * scale + offset;
 
 			// Round this point to the center of the log-polar cell the input lies in, convert back to cartesian
-			double cellX = std::round(logPolarX);
-			double cellY = std::round(logPolarY);
-			double outTheta = (cellX - offsetX) / scale;
-			double outLogR = (cellY - offsetY) / scale;
-			double newOutTheta = outTheta * std::cos(domainTheta) + outLogR * std::sin(domainTheta);
-			double newOutLogR = -outTheta * std::sin(domainTheta) + outLogR * std::cos(domainTheta);
-			double outR = std::exp(newOutLogR);
-			double outX = outR * std::cos(newOutTheta);
-			double outY = outR * std::sin(newOutTheta);
-			output.x = (1 - effectScale) * input.x + effectScale * outX;
-			output.y = (1 - effectScale) * input.y + effectScale * outY;
+			logPolarCoords.x = std::round(logPolarCoords.x);
+			logPolarCoords.y = std::round(logPolarCoords.y);
+			logPolarCoords = (logPolarCoords - offset) * (1 / scale);
+			logPolarCoords.rotate(0, 0, -domainTheta);
+			double outR = std::exp(logPolarCoords.y);
+			double outTheta = logPolarCoords.x;
+			output = osci::Point(outR * std::cos(outTheta), outR * std::sin(outTheta), input.z);
 		}
-		return output;
+		return (1 - effectScale) * input + effectScale * output;
 	}
 };

@@ -157,14 +157,14 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<GodrayEffect>(),
         std::vector<osci::EffectParameter*>{
-            new osci::EffectParameter("God Ray Size", "TODO", "godrayAmp", VERSION_HINT, 0.2, 0.0, 1.0),
-            new osci::EffectParameter("God Ray Bias", "TODO", "godrayBias", VERSION_HINT, 1.0, -1.5, 1.5)
+            new osci::EffectParameter("God Ray Size", "Creates a radiating god ray effect by adding noise. This slider controls the size of the rays.", "godrayAmp", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("God Ray Bias", "Controls how visible the input shape is by biasing the noise toward the input shape.", "godrayBias", VERSION_HINT, 0.6, -1.0, 1.0)
         }));
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<RadialWrapEffect>(),
         std::vector<osci::EffectParameter *>{
-        new osci::EffectParameter("Radial Wrap", "TODO", "radialWrapEnable", VERSION_HINT, 1.0, 0.0, 1.0),
-            new osci::EffectParameter("Wrap Degree", "TODO", "radialWrapDegree", VERSION_HINT, 2.0, 1.0, 8.0)
+            new osci::EffectParameter("Radial Wrap", "Distorts the shape by multiplying the angle and warping the length of each point.", "radialWrapEnable", VERSION_HINT, 1.0, 0.0, 1.0),
+            new osci::EffectParameter("Wrap Degree", "The multiplier applied to each point's angle.", "radialWrapDegree", VERSION_HINT, 2.0, 1.0, 8.0)
     }));
     toggleableEffects.push_back(custom);
     toggleableEffects.push_back(trace);
