@@ -11,7 +11,7 @@ void Frustum::setCameraInternals(float focalLength, float ratio, float nearDista
 
 	// compute width and height of the near section
 	float fov = 2 * std::atan(1 / focalLength);
-	tang = (float) std::tan(fov * 0.5);
+	tang = std::tan(fov * 0.5f);
 	height = nearDistance * tang;
 	width = height * ratio;
 }

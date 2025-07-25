@@ -8,7 +8,8 @@ public:
 		auto effectScale = values[0].load();
 		auto focalLength = juce::jmax(values[1].load(), 0.001);
 
-		Vec3 origin = Vec3(0, 0, -focalLength);
+		// Place such that view frustum is tangent to unit sphere
+		Vec3 origin = Vec3(0, 0, -std::sqrt(1 + focalLength * focalLength));
 		camera.setPosition(origin);
 		camera.setFocalLength(focalLength);
 		Vec3 vec = Vec3(input.x, input.y, input.z);

@@ -151,8 +151,9 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         dashedLineEffect,
         std::vector<osci::EffectParameter*>{
-            new osci::EffectParameter("Dash Length", "Controls the length between dashed lines.", "dashLength", VERSION_HINT, 0.2, 0.0, 1.0),
+            new osci::EffectParameter("Dash Length", "Controls the length between dashed lines.", "dashLength", VERSION_HINT, 16.0, 1.0, 30.0),
             new osci::EffectParameter("Dash Coverage", "Controls the fraction of each dash unit that is drawn.", "dashCoverage", VERSION_HINT, 0.5, 0.0, 1.0),
+            new osci::EffectParameter("Dash Movement", "TODO", "dashMovement", VERSION_HINT, 0.0, -2.0, 2.0),
         }));
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<GodrayEffect>(),

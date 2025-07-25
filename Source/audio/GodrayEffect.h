@@ -10,8 +10,8 @@ public:
 
 		double noise = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
 		double noiseSign = noise >= 0.0 ? 1.0 : -1.0;
-		// If bias is positive, bend values toward 0
-		// If bias is negative, bend values toward +/- 1
+		// If bias is positive, bend values toward center
+		// If bias is negative, bend values toward extremes
 		if (bias < 0.0) {
 			noise = noiseSign * (1 - std::pow(1 - std::abs(noise), biasExponent));
 		} else {
