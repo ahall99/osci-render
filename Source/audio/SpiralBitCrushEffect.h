@@ -13,6 +13,7 @@ public:
 
 		osci::Point output(0, 0, input.z);
 		if (input.x != 0 || input.y != 0) {
+			// TODO try constrain in z to log(abs(z)), just need to decide which log base
 			double domainHypot = std::hypot(domainX, domainY);
 			double domainTheta = std::atan2(domainY, domainX);
 			double scale = domainHypot / (2 * std::numbers::pi);

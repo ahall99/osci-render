@@ -14,5 +14,5 @@ private:
 	const static int MAX_BUFFER = 192000;
 	std::vector<osci::Point> buffer = std::vector<osci::Point>(MAX_BUFFER);
 	int bufferIndex = 0;
-	double delayPhase = 0.0; // [0, 1]
+	double framePhase = 0.0; // [0, 1]
 };

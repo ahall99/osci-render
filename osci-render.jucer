@@ -97,6 +97,8 @@
               file="Source/audio/PerspectiveEffect.cpp"/>
         <FILE id="h0dMim" name="PerspectiveEffect.h" compile="0" resource="0"
               file="Source/audio/PerspectiveEffect.h"/>
+        <FILE id="oYMPFo" name="PolygonBitCrushEffect.h" compile="0" resource="0"
+              file="Source/audio/PolygonBitCrushEffect.h"/>
         <FILE id="t5g8pf" name="PublicSynthesiser.h" compile="0" resource="0"
               file="Source/audio/PublicSynthesiser.h"/>
         <FILE id="dzl4om" name="RadialWrapEffect.h" compile="0" resource="0"
