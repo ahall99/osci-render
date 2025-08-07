@@ -15,6 +15,7 @@
 #include "audio/BulgeEffect.h"
 #include "audio/TwistEffect.h"
 #include "audio/DistortEffect.h"
+#include "audio/MultiplexEffect.h"
 #include "audio/SmoothEffect.h"
 #include "audio/VectorCancellingEffect.h"
 #include "audio/GodrayEffect.h"
@@ -67,6 +68,20 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<BulgeEffect>(),
         new osci::EffectParameter("Bulge", "Applies a bulge that makes the centre of the image larger, and squishes the edges of the image. This applies a distortion to the audio.", "bulge", VERSION_HINT, 0.5, 0.0, 1.0)));
+    auto multiplexEffect = std::make_shared<osci::Effect>(
+        std::make_shared<MultiplexEffect>(),
+        std::vector<osci::EffectParameter*>{
+            new osci::EffectParameter("Multiplex X", "Controls the horizontal grid size for the multiplex effect.", "multiplexGridX", VERSION_HINT, 1.0, 1.0, 8.0),
+            new osci::EffectParameter("Multiplex Y", "Controls the vertical grid size for the multiplex effect.", "multiplexGridY", VERSION_HINT, 1.0, 1.0, 8.0),
+            new osci::EffectParameter("Multiplex Z", "Controls the depth grid size for the multiplex effect.", "multiplexGridZ", VERSION_HINT, 1.0, 1.0, 8.0),
+            new osci::EffectParameter("Multiplex Smooth", "Controls the smoothness of transitions between grid sizes.", "multiplexSmooth", VERSION_HINT, 0.0, 0.0, 1.0),
+            new osci::EffectParameter("Multiplex Phase", "Controls the current phase of the multiplex grid animation.", "gridPhase", VERSION_HINT, 0.0, 0.0, 1.0),
+            new osci::EffectParameter("Multiplex Delay", "Controls the delay of the audio samples used in the multiplex effect.", "gridDelay", VERSION_HINT, 0.0, 0.0, 1.0),
+        });
+    // Set up the Grid Phase parameter with sawtooth LFO at 100Hz
+    multiplexEffect->getParameter("gridPhase")->lfo->setUnnormalisedValueNotifyingHost((int)osci::LfoType::Sawtooth);
+    multiplexEffect->getParameter("gridPhase")->lfoRate->setUnnormalisedValueNotifyingHost(100.0);
+    toggleableEffects.push_back(multiplexEffect);
     toggleableEffects.push_back(std::make_shared<osci::Effect>(
         std::make_shared<VectorCancellingEffect>(),
         new osci::EffectParameter("Vector Cancelling", "Inverts the audio and image every few samples to 'cancel out' the audio, making the audio quiet, and distorting the image.", "vectorCancelling", VERSION_HINT, 0.1111111, 0.0, 1.0)));
@@ -231,7 +246,7 @@ OscirenderAudioProcessor::OscirenderAudioProcessor() : CommonAudioProcessor(Buse
     floatParameters.push_back(animationOffset);
 
     for (int i = 0; i < voices->getValueUnnormalised(); i++) {
-        synth.addVoice(new ShapeVoice(*this));
+        synth.addVoice(new ShapeVoice(*this, inputBuffer));
     }
 
     intParameters.push_back(voices);
@@ -559,7 +574,7 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 
     const double EPSILON = 0.00001;
 
-    juce::AudioBuffer<float> inputBuffer = juce::AudioBuffer<float>(totalNumInputChannels, buffer.getNumSamples());
+    inputBuffer = juce::AudioBuffer<float>(totalNumInputChannels, buffer.getNumSamples());
     for (auto channel = 0; channel < totalNumInputChannels; channel++) {
         inputBuffer.copyFrom(channel, 0, buffer, channel, 0, buffer.getNumSamples());
     }
@@ -567,44 +582,41 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
     juce::AudioBuffer<float> outputBuffer3d = juce::AudioBuffer<float>(3, buffer.getNumSamples());
     outputBuffer3d.clear();
 
-    {
 #if (JUCE_MAC || JUCE_WINDOWS) && OSCI_PREMIUM
-        if (syphonInputActive) {
-            for (int sample = 0; sample < outputBuffer3d.getNumSamples(); sample++) {
-                osci::Point point = syphonImageParser.getSample();
-                outputBuffer3d.setSample(0, sample, point.x);
-                outputBuffer3d.setSample(1, sample, point.y);
-            }
-        } else
+    if (syphonInputActive) {
+        for (int sample = 0; sample < outputBuffer3d.getNumSamples(); sample++) {
+            osci::Point point = syphonImageParser.getSample();
+            outputBuffer3d.setSample(0, sample, point.x);
+            outputBuffer3d.setSample(1, sample, point.y);
+        }
+    } else
 #endif
-            if (usingInput && totalNumInputChannels >= 1) {
-            if (totalNumInputChannels >= 2) {
-                for (auto channel = 0; channel < juce::jmin(2, totalNumInputChannels); channel++) {
-                    outputBuffer3d.copyFrom(channel, 0, inputBuffer, channel, 0, buffer.getNumSamples());
-                }
-            } else {
-                // For mono input, copy the single channel to both left and right
-                outputBuffer3d.copyFrom(0, 0, inputBuffer, 0, 0, buffer.getNumSamples());
-                outputBuffer3d.copyFrom(1, 0, inputBuffer, 0, 0, buffer.getNumSamples());
+    if (usingInput && totalNumInputChannels >= 1) {
+        if (totalNumInputChannels >= 2) {
+            for (auto channel = 0; channel < juce::jmin(2, totalNumInputChannels); channel++) {
+                outputBuffer3d.copyFrom(channel, 0, inputBuffer, channel, 0, buffer.getNumSamples());
             }
-
-            // handle all midi messages
-            auto midiIterator = midiMessages.cbegin();
-            std::for_each(midiIterator,
-                          midiMessages.cend(),
-                          [&](const juce::MidiMessageMetadata& meta) {
-                              synth.publicHandleMidiEvent(meta.getMessage());
-                          });
         } else {
-            juce::SpinLock::ScopedLockType lock1(parsersLock);
-            juce::SpinLock::ScopedLockType lock2(effectsLock);
-            synth.renderNextBlock(outputBuffer3d, midiMessages, 0, buffer.getNumSamples());
-            for (int i = 0; i < synth.getNumVoices(); i++) {
-                auto voice = dynamic_cast<ShapeVoice*>(synth.getVoice(i));
-                if (voice->isVoiceActive()) {
-                    customEffect->frequency = voice->getFrequency();
-                    break;
-                }
+            // For mono input, copy the single channel to both left and right
+            outputBuffer3d.copyFrom(0, 0, inputBuffer, 0, 0, buffer.getNumSamples());
+            outputBuffer3d.copyFrom(1, 0, inputBuffer, 0, 0, buffer.getNumSamples());
+        }
+
+        // handle all midi messages
+        auto midiIterator = midiMessages.cbegin();
+        std::for_each(midiIterator,
+            midiMessages.cend(),
+            [&] (const juce::MidiMessageMetadata& meta) { synth.publicHandleMidiEvent(meta.getMessage()); }
+        );
+    } else {
+        juce::SpinLock::ScopedLockType lock1(parsersLock);
+        juce::SpinLock::ScopedLockType lock2(effectsLock);
+        synth.renderNextBlock(outputBuffer3d, midiMessages, 0, buffer.getNumSamples());
+        for (int i = 0; i < synth.getNumVoices(); i++) {
+            auto voice = dynamic_cast<ShapeVoice*>(synth.getVoice(i));
+            if (voice->isVoiceActive()) {
+                customEffect->frequency = voice->getFrequency();
+                break;
             }
         }
     }
@@ -663,6 +675,9 @@ void OscirenderAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
             if (volume > EPSILON) {
                 for (auto& effect : toggleableEffects) {
                     if (effect->enabled->getValue()) {
+                        if (effect->getId() == custom->getId()) {
+                            effect->setExternalInput(osci::Point{ left, right });
+                        }
                         channels = effect->apply(sample, channels, currentVolume);
                     }
                 }
@@ -920,7 +935,7 @@ void OscirenderAudioProcessor::parameterValueChanged(int parameterIndex, float n
         if (numVoices != synth.getNumVoices()) {
             if (numVoices > synth.getNumVoices()) {
                 for (int i = synth.getNumVoices(); i < numVoices; i++) {
-                    synth.addVoice(new ShapeVoice(*this));
+                    synth.addVoice(new ShapeVoice(*this, inputBuffer));
                 }
             } else {
                 for (int i = synth.getNumVoices() - 1; i >= numVoices; i--) {
