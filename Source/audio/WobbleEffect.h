@@ -1,7 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
+#include "../PluginProcessor.h"
 
-class OscirenderAudioProcessor;
 class WobbleEffect : public osci::EffectApplication {
 public:
 	WobbleEffect(OscirenderAudioProcessor& p) : audioProcessor(p) {}

@@ -4,6 +4,7 @@
 class RadialWrapEffect : public osci::EffectApplication {
 public:
 	osci::Point apply(int index, osci::Point input, const std::vector<std::atomic<double>> &values, double sampleRate) override {
+		// TODO: Make angle relative to top
 		// Treat input as complex number and raise to integer power
 		// Disallowing non-integer and negative exponents because of the branch cut
 		double effectScale = juce::jlimit(0.0, 1.0, values[0].load());

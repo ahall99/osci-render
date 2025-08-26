@@ -1,7 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
+#include "../PluginProcessor.h"
 
-class OscirenderAudioProcessor;
 class DashedLineEffect : public osci::EffectApplication {
 public:
 	DashedLineEffect(OscirenderAudioProcessor &p) : audioProcessor(p) {}

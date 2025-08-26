@@ -8,6 +8,8 @@ public:
 		double bias = values[1];
 		double biasExponent = std::pow(16.0, std::abs(bias));
 
+		// TODO: Try lopsided radiation
+
 		double noise = 2.0 * (double)std::rand() / RAND_MAX - 1.0;
 		double noiseSign = noise >= 0.0 ? 1.0 : -1.0;
 		// If bias is positive, bend values toward center
