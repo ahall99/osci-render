@@ -378,7 +378,7 @@ void VisualiserComponent::setRecording(bool recording) {
                     if (file.existsAsFile()) {
                         file.deleteFile();
                     }
-                    ffmpegProcess.start("\"" + ffmpegFile.getFullPathName() + "\" -i \"" + tempVideoFile->getFile().getFullPathName() + "\" -i \"" + tempAudioFile->getFile().getFullPathName() + "\" -c:v copy -c:a aac -b:a 384k -y \"" + file.getFullPathName() + "\"");
+                    ffmpegProcess.start("\"" + ffmpegFile.getFullPathName() + "\" -i \"" + tempVideoFile->getFile().getFullPathName() + "\" -i \"" + tempAudioFile->getFile().getFullPathName() + "\" -c:v copy -c:a pcm_s16le -y \"" + file.getFullPathName() + "\""); // -c:a pcm_s16le
                     ffmpegProcess.close();
                 } else if (wasRecordingAudio) {
                     tempAudioFile->getFile().copyFileTo(file);

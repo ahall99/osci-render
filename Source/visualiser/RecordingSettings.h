@@ -182,6 +182,7 @@ public:
                 return "mov";
 #endif
             case VideoCodec::H264:
+                return "mov";
             case VideoCodec::H265:
             case VideoCodec::VP9:
             default:
