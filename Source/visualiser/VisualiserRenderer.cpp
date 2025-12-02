@@ -795,7 +795,7 @@ void VisualiserRenderer::drawCRT() {
     outputShader->setUniform("uRealScreen", parameters.screenOverlay->isRealisticDisplay() ? 1.0f : 0.0f);
 #endif
     outputShader->setUniform("uResizeForCanvas", lineTexture.width / (float) renderTexture.width);
-    juce::Colour colour = juce::Colour::fromHSV(parameters.getHue() / 360.0f, 1.0, 1.0, 1.0);
+    juce::Colour colour = juce::Colour::fromHSV((float)parameters.getHue() / 360.0f, 1.0f, 1.0f, 1.0f);
     outputShader->setUniform("uColour", colour.getFloatRed(), colour.getFloatGreen(), colour.getFloatBlue());
     drawTexture({
         lineTexture,
