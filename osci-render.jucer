@@ -795,6 +795,7 @@
         <MODULEPATH id="juce_sharedtexture" path="modules"/>
         <MODULEPATH id="osci_render_core" path="modules"/>
         <MODULEPATH id="melatonin_inspector" path="modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </LINUX_MAKE>
     <VS2022 targetFolder="Builds/osci-render/VisualStudio2022" smallIcon="pSc1mq"
@@ -836,6 +837,7 @@
         <MODULEPATH id="juce_sharedtexture" path="modules"/>
         <MODULEPATH id="osci_render_core" path="modules"/>
         <MODULEPATH id="melatonin_inspector" path="modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
     <XCODE_MAC targetFolder="Builds/osci-render/MacOSX" extraLinkerFlags="-Wl,-weak_reference_mismatches,weak"
@@ -883,6 +885,7 @@
         <MODULEPATH id="juce_sharedtexture" path="modules"/>
         <MODULEPATH id="osci_render_core" path="modules"/>
         <MODULEPATH id="melatonin_inspector" path="modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
@@ -904,6 +907,8 @@
     <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
             useGlobalPath="1"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
