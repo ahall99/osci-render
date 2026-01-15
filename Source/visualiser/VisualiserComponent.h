@@ -55,6 +55,7 @@ public:
     void mouseMove(const juce::MouseEvent& event) override;
     void mouseDown(const juce::MouseEvent& event) override;
     bool keyPressed(const juce::KeyPress& key) override;
+    void savePng();
     void setRecording(bool recording);
     void childUpdated();
 

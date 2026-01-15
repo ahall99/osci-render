@@ -65,6 +65,9 @@ protected:
     std::function<void()> postRenderCallback = nullptr;
 
     juce::AudioBuffer<float> audioOutputBuffer;
+
+    void saveTextureToPNG(std::vector<unsigned char> &pixels, const juce::File &file);
+    void saveTextureToPNG(Texture texture, const juce::File& file);
 private:    juce::Rectangle<int> viewportArea;
     std::optional<juce::Rectangle<float>> cropRectangle;
 
@@ -156,7 +159,6 @@ private:    juce::Rectangle<int> viewportArea;
     void setupArrays(int num_points);
     void setupTextures(int resolution);
     void drawLineTexture(const std::vector<float>& xPoints, const std::vector<float>& yPoints, const std::vector<float>& zPoints);
-    void saveTextureToPNG(Texture texture, const juce::File& file);
     void activateTargetTexture(std::optional<Texture> texture);
     void setShader(juce::OpenGLShaderProgram* program);
     void drawTexture(std::vector<std::optional<Texture>> textures);

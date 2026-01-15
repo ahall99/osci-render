@@ -505,6 +505,39 @@ void VisualiserRenderer::drawLineTexture(const std::vector<float> &xPoints, cons
     glBindTexture(GL_TEXTURE_2D, targetTexture.value().id);
 }
 
+void VisualiserRenderer::saveTextureToPNG(std::vector<unsigned char> &pixels, const juce::File &file) {
+    int width = renderTexture.width;
+    int height = renderTexture.height;
+
+
+
+    juce::Image image = juce::Image(juce::Image::PixelFormat::ARGB, width, height, true);
+    juce::Image::BitmapData bitmapData(image, juce::Image::BitmapData::writeOnly);
+
+    // Copy the pixel data to the JUCE image (and swap R and B channels)
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int srcIndex = (y * width + x) * 4;     // RGBA format
+            juce::uint8 r = (pixels)[srcIndex];     // Red
+            juce::uint8 g = (pixels)[srcIndex + 1]; // Green
+            juce::uint8 b = (pixels)[srcIndex + 2]; // Blue
+            juce::uint8 a = 255;// (pixels)[srcIndex + 3]; // Alpha
+
+            // This method uses colors in RGBA
+            bitmapData.setPixelColour(x, height - y - 1, juce::Colour(r, g, b, a));
+        }
+    }
+
+    // Save the JUCE image to file (PNG in this case)
+    juce::PNGImageFormat pngFormat;
+    std::unique_ptr<juce::FileOutputStream> outputStream(file.createOutputStream());
+    if (outputStream != nullptr) {
+        outputStream->setPosition(0);
+        pngFormat.writeImageToStream(image, *outputStream);
+        outputStream->flush();
+    }
+}
+
 void VisualiserRenderer::saveTextureToPNG(Texture texture, const juce::File &file) {
     using namespace juce::gl;
     GLuint textureID = texture.id;
@@ -527,7 +560,7 @@ void VisualiserRenderer::saveTextureToPNG(Texture texture, const juce::File &fil
             juce::uint8 r = (pixels)[srcIndex];     // Red
             juce::uint8 g = (pixels)[srcIndex + 1]; // Green
             juce::uint8 b = (pixels)[srcIndex + 2]; // Blue
-            juce::uint8 a = (pixels)[srcIndex + 3]; // Alpha
+            juce::uint8 a = 255;// (pixels)[srcIndex + 3]; // Alpha
 
             // This method uses colors in RGBA
             bitmapData.setPixelColour(x, height - y - 1, juce::Colour(r, g, b, a));

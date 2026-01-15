@@ -128,6 +128,8 @@ VisualiserComponent::VisualiserComponent(
                 // draw frame to ffmpeg
                 Texture renderTexture = getRenderTexture();
                 getFrame(framePixels);
+                juce::File file("C:\\Users\\antho\\Desktop\\OSCI_FRAME\\output.png");
+                saveTextureToPNG(framePixels, file);
                 if (ffmpegProcess.write(framePixels.data(), 4 * renderTexture.width * renderTexture.height, 3000) == 0) {
                     record.setToggleState(false, juce::NotificationType::dontSendNotification);
 
@@ -270,7 +272,19 @@ bool VisualiserComponent::keyPressed(const juce::KeyPress &key) {
     return false;
 }
 
+void VisualiserComponent::savePng()
+{
+    getFrame(framePixels);
+    //Texture renderTexture = getRenderTexture();
+    juce::File file("C:\\Users\\antho\\Desktop\\OSCI_FRAME\\output.png");
+    saveTextureToPNG(framePixels, file);
+}
+
 void VisualiserComponent::setRecording(bool recording) {
+#if 1
+    framePixels.resize(getRenderWidth() * getRenderHeight() * 4);
+    //savePng();
+#else
     stopwatch.stop();
     stopwatch.reset();
 
@@ -402,6 +416,7 @@ void VisualiserComponent::setRecording(bool recording) {
     numFrames = 0;
 #endif
     record.setToggleState(recording, juce::NotificationType::dontSendNotification);
+#endif
     resized();
 }
 
