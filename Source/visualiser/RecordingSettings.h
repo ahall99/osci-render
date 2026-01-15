@@ -55,7 +55,7 @@ public:
         "Resolution",
         "The resolution of the recorded video. This only changes when not recording.",
         "resolution",
-        VERSION_HINT, 1024, 128, 2048, 1.0
+        VERSION_HINT, 1024, 128, 4096, 1.0
     );
     osci::Effect resolutionEffect = osci::Effect(&resolution);
     
