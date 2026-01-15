@@ -71,6 +71,8 @@ public:
     };
 
 private:
+    int frameCounter = 0;
+
     CommonAudioProcessor& audioProcessor;
     CommonPluginEditor& editor;
 

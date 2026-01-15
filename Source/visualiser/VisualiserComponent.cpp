@@ -127,9 +127,13 @@ VisualiserComponent::VisualiserComponent(
             if (recordingVideo) {
                 // draw frame to ffmpeg
                 Texture renderTexture = getRenderTexture();
-                getFrame(framePixels);
-                juce::File file("C:\\Users\\antho\\Desktop\\OSCI_FRAME\\output.png");
-                saveTextureToPNG(framePixels, file);
+                if (frameCounter++ == 40) {
+                    getFrame(framePixels);
+                    juce::File file("C:\\Users\\antho\\Desktop\\OSCI_FRAME\\output.png");
+                    saveTextureToPNG(framePixels, file);
+                }
+                
+                /*
                 if (ffmpegProcess.write(framePixels.data(), 4 * renderTexture.width * renderTexture.height, 3000) == 0) {
                     record.setToggleState(false, juce::NotificationType::dontSendNotification);
 
@@ -140,11 +144,15 @@ VisualiserComponent::VisualiserComponent(
                             "OK");
                     });
                 }
+                */
             }
 #endif
             if (recordingAudio) {
                 audioRecorder.audioThreadCallback(audioOutputBuffer);
             }
+        }
+        else {
+            frameCounter = 0;
         }
         
         stopwatch.addTime(juce::RelativeTime::seconds(1.0 / this->recordingSettings.getFrameRate()));
@@ -281,7 +289,7 @@ void VisualiserComponent::savePng()
 }
 
 void VisualiserComponent::setRecording(bool recording) {
-#if 1
+#if 0
     framePixels.resize(getRenderWidth() * getRenderHeight() * 4);
     //savePng();
 #else
@@ -343,10 +351,12 @@ void VisualiserComponent::setRecording(bool recording) {
                 recordingSettings.getCompressionPreset(),
                 tempVideoFile->getFile());
 
+            /*
             if (!ffmpegProcess.start(cmd)) {
                 record.setToggleState(false, juce::NotificationType::dontSendNotification);
                 return;
             }
+            */
             framePixels.resize(getRenderWidth() * getRenderHeight() * 4);
         }
 
@@ -384,6 +394,7 @@ void VisualiserComponent::setRecording(bool recording) {
         auto flags = juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::warnAboutOverwriting;
 
 #if OSCI_PREMIUM
+        /*
         chooser->launchAsync(flags, [this, wasRecordingAudio, wasRecordingVideo](const juce::FileChooser &chooser) {
             auto file = chooser.getResult();
             if (file != juce::File()) {
@@ -400,7 +411,7 @@ void VisualiserComponent::setRecording(bool recording) {
                     tempVideoFile->getFile().copyFileTo(file);
                 }
                 audioProcessor.setLastOpenedDirectory(file.getParentDirectory());
-            } });
+            } });*/
 #else
         chooser->launchAsync(flags, [this](const juce::FileChooser &chooser) {
             auto file = chooser.getResult();
